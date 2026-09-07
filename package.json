@@ -1,0 +1,17 @@
+{
+  "name": "backend-with-umair",
+  "version": "1.0.0",
+  "description": "learn backend with umair",
+  "keywords": [
+    "backend",
+    "umair",
+    "learn"
+  ],
+  "license": "ISC",
+  "author": "Umair Arshad",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
