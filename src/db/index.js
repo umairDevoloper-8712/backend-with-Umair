@@ -11,6 +11,7 @@ try {
     
 } catch (error) {
     console.log("error in Data base connection : ", error)
+    process.exit(1)
     
 }
 }
