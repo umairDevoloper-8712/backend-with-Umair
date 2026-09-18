@@ -6,10 +6,31 @@ import { ApiRespons } from "../utils/ApiRespons.js";
 
 
 
+
+const generateAccessAndRefreshToken = async (userId) => {
+    try {
+
+        const user = await User.findById(userId)
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.genrateRefreshTokrn()
+
+        user.refreshToken = refreshToken;
+        await user.save({ validateBeforeSave: false })
+        return { accessToken, refreshToken }
+
+    } catch (error) {
+
+        throw new ApiError(500, "somethng went wrong while creating access or refresh token")
+
+    }
+}
+
+
+
 const registerUser = asyncHandelr(async (req, res) => {
-    const   { email, fullName, password, userName } = req.body
+    const { email, fullName, password, userName } = req.body
     if (
-        [email, fullName, password , userName].some((fields) =>
+        [email, fullName, password, userName].some((fields) =>
             fields?.trim() === ""
         )
     ) {
@@ -17,9 +38,9 @@ const registerUser = asyncHandelr(async (req, res) => {
             (400, "All fields are requried")
 
     }
-    
+
     const userExist = await User.findOne({
-        $or: [ { email },{ userName } ]
+        $or: [{ email }, { userName }]
 
     })
     if (userExist) {
@@ -69,4 +90,85 @@ const registerUser = asyncHandelr(async (req, res) => {
 
 })
 
-export { registerUser }
+const loginUser = asyncHandelr(async (req, res,) => {
+    //algorithm for login user
+    // req.body => data
+    //email or userName lyna
+    //find user
+    //check password
+    //access and refresh token
+    //send cookies
+    //response
+    const { email, password, userName } = req.body
+    if (!userName || !email) {
+        throw new ApiError(400, "email or user name is required");
+
+
+    }
+
+    const user = await User.findOne({
+        $or: [{ email }, userName]
+    })
+    if (!user) {
+        throw new ApiError(404, "user not exsist ");
+
+
+    }
+    const passwordValid = await user.isPasswordCorret(password)
+
+    if (!passwordValid) {
+        throw new ApiError(401, "password is not correct ");
+
+
+    }
+
+    const { accessToken, refreshTokrn } = await generateAccessAndRefreshToken(user._id)
+
+    const loggedInUser = await User.findById(user._id).select("-password , -refreshToken")
+
+    const options = {
+        httpOnly: true,
+        Secure: true
+    }
+    return res
+        .status(200)
+        .cookie("refreshToken", refreshTokrn, options)
+        .cookie("accessToken", accessToken, options)
+        .json(
+            new ApiRespons(
+                200,
+                {
+                    loggedInUser, accessToken, refreshTokrn
+                }
+            )
+        )
+
+    const logOutUser = asyncHandelr(async (req, res) => {
+        User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $set: {
+                    refreshToken: undefined
+
+                },
+
+            }
+            , {
+                new: true
+            })
+        const options = {
+            httpOnly: true,
+            Secure: true
+        }
+        return res
+            .status(200)
+            .clearCookie("accessToken", options)
+            .clearCookie("refreshToken", options)
+            .json(
+                new ApiRespons(200, {}, "user loggedout")
+            )
+    })
+
+})
+
+export { registerUser, loginUser, logOutUser }
