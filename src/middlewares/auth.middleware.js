@@ -1,13 +1,13 @@
-import jsonwebtoken from "jsonwebtoken"
+import JWT from "jsonwebtoken"
 import {User} from "../models/user.model.js"
 import {ApiError} from "../utils/apiError.js"
-import asyncHandelr from "../utils/asynchandler.js"
+import {asyncHandler} from "../utils/asynchandler.js"
 
 
 
 
 
-export const verifyJwt = asyncHandelr(async (res, req, next) => {
+export const verifyJWT = asyncHandler(async (res, req, next) => {
 
 
    try {
@@ -19,7 +19,7 @@ export const verifyJwt = asyncHandelr(async (res, req, next) => {
          throw new ApiError(401 , "un Authorized Access")
  
      }
-   const decodedToken = jsonwebtoken.verify(token, process.env.ACCESS_TOKEN_SECRET)
+   const decodedToken = JWT.verify(token, process.env.ACCESS_TOKEN_SECRET)
  
     const user = await User.findById(decodedToken?._id).select("-password , -accessToken")
  

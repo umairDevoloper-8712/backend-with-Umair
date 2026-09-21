@@ -1,4 +1,4 @@
-const asyncHandelr = (requstHandler) => {
+ const asyncHandler = (requstHandler) => {
     return (req, res, next) => {
 
         Promise
@@ -7,4 +7,4 @@ const asyncHandelr = (requstHandler) => {
 
     }
 }
-export {asyncHandelr}
+export {asyncHandler}
